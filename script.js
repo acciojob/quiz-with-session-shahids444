@@ -1,48 +1,49 @@
 const questionsData = [
   {
     question: "What is the capital of France?",
-    options: ["Berlin", "Madrid", "Paris", "Rome"],
-    answer: 2
+    options: ["Paris", "Berlin", "Madrid", "Rome"],
+    answer: 0
   },
   {
-    question: "Which planet is known as the Red Planet?",
-    options: ["Earth", "Mars", "Jupiter", "Saturn"],
-    answer: 1
+    question: "What is the highest mountain in the world?",
+    options: ["Mount Everest", "K2", "Kangchenjunga", "Lhotse"],
+    answer: 0
   },
   {
     question: "What is 2 + 2?",
-    options: ["3", "4", "5", "6"],
-    answer: 1
+    options: ["4", "3", "5", "6"],
+    answer: 0
   },
   {
     question: "Which language runs in a web browser?",
-    options: ["Java", "C", "Python", "JavaScript"],
-    answer: 3
+    options: ["JavaScript", "Java", "C", "Python"],
+    answer: 0
   },
   {
     question: "What does CSS stand for?",
     options: [
-      "Computer Style Sheets",
       "Cascading Style Sheets",
+      "Computer Style Sheets",
       "Colorful Style Sheets",
       "Creative Style System"
     ],
-    answer: 1
+    answer: 0
   }
 ];
 
-// DOM
+// DOM elements
 const questionsDiv = document.getElementById("questions");
 const scoreDiv = document.getElementById("score");
 const submitBtn = document.getElementById("submit");
 
-// Restore progress from sessionStorage
+// Restore saved progress
 const savedProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
 
+// Render questions
 questionsData.forEach((q, qIndex) => {
   const qContainer = document.createElement("div");
   const question = document.createElement("p");
-  question.textContent = q.question; // FIXED: removed numbering
+  question.textContent = q.question; // Do not add number prefix
   qContainer.appendChild(question);
 
   q.options.forEach((opt, optIndex) => {
@@ -53,13 +54,13 @@ questionsData.forEach((q, qIndex) => {
     radio.name = `q${qIndex}`;
     radio.value = optIndex;
 
-    // Restore selected radio
+    // Restore previous selection
     if (savedProgress[`q${qIndex}`] == optIndex) {
       radio.checked = true;
-      radio.setAttribute("checked", "true"); // FIXED: for Cypress test
+      radio.setAttribute("checked", "true"); // Important for Cypress
     }
 
-    // Save to sessionStorage on change
+    // Save selection to sessionStorage
     radio.addEventListener("change", () => {
       savedProgress[`q${qIndex}`] = optIndex;
       sessionStorage.setItem("progress", JSON.stringify(savedProgress));
@@ -74,8 +75,10 @@ questionsData.forEach((q, qIndex) => {
   questionsDiv.appendChild(qContainer);
 });
 
+// Handle submission
 submitBtn.addEventListener("click", () => {
   let score = 0;
+
   questionsData.forEach((q, index) => {
     const selected = savedProgress[`q${index}`];
     if (selected !== undefined && parseInt(selected) === q.answer) {
@@ -83,12 +86,12 @@ submitBtn.addEventListener("click", () => {
     }
   });
 
-  const scoreMessage = `Your score is ${score} out of ${questionsData.length}.`;
-  scoreDiv.textContent = scoreMessage;
+  const scoreText = `Your score is ${score} out of ${questionsData.length}.`;
+  scoreDiv.textContent = scoreText;
   localStorage.setItem("score", score);
 });
 
-// Restore previous score if present
+// Show last score from localStorage
 const savedScore = localStorage.getItem("score");
 if (savedScore !== null) {
   scoreDiv.textContent = `Your score is ${savedScore} out of ${questionsData.length}.`;
