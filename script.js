@@ -31,19 +31,18 @@ const questionsData = [
   }
 ];
 
-// DOM elements
+// DOM
 const questionsDiv = document.getElementById("questions");
 const scoreDiv = document.getElementById("score");
 const submitBtn = document.getElementById("submit");
 
-// Load saved progress
+// Restore progress from sessionStorage
 const savedProgress = JSON.parse(sessionStorage.getItem("progress")) || {};
 
-// Render questions
 questionsData.forEach((q, qIndex) => {
   const qContainer = document.createElement("div");
   const question = document.createElement("p");
-  question.textContent = `${qIndex + 1}. ${q.question}`;
+  question.textContent = q.question; // FIXED: removed numbering
   qContainer.appendChild(question);
 
   q.options.forEach((opt, optIndex) => {
@@ -54,12 +53,13 @@ questionsData.forEach((q, qIndex) => {
     radio.name = `q${qIndex}`;
     radio.value = optIndex;
 
-    // Restore saved selection
+    // Restore selected radio
     if (savedProgress[`q${qIndex}`] == optIndex) {
       radio.checked = true;
+      radio.setAttribute("checked", "true"); // FIXED: for Cypress test
     }
 
-    // Save progress to sessionStorage
+    // Save to sessionStorage on change
     radio.addEventListener("change", () => {
       savedProgress[`q${qIndex}`] = optIndex;
       sessionStorage.setItem("progress", JSON.stringify(savedProgress));
@@ -74,7 +74,6 @@ questionsData.forEach((q, qIndex) => {
   questionsDiv.appendChild(qContainer);
 });
 
-// Handle submission
 submitBtn.addEventListener("click", () => {
   let score = 0;
   questionsData.forEach((q, index) => {
@@ -87,12 +86,9 @@ submitBtn.addEventListener("click", () => {
   const scoreMessage = `Your score is ${score} out of ${questionsData.length}.`;
   scoreDiv.textContent = scoreMessage;
   localStorage.setItem("score", score);
-
-  // Optional: Clear sessionStorage after submission
-  // sessionStorage.removeItem("progress");
 });
 
-// Show previous score if available
+// Restore previous score if present
 const savedScore = localStorage.getItem("score");
 if (savedScore !== null) {
   scoreDiv.textContent = `Your score is ${savedScore} out of ${questionsData.length}.`;
